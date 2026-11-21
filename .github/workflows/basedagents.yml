@@ -53,10 +53,3 @@ jobs:
           INFRA_HUB_URL: https://x402-api-wigc.onrender.com
         run: python hub_worker.py
 
-      - name: Install BasedAgents SDK
-        run: pip install -r requirements.txt
-
-      - name: Run agent
-        env:
-          AGENT_NAME: PredatorTaskAgent
-        run: python agent.py
