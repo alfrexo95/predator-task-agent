@@ -20,14 +20,6 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install BasedAgents SDK
-        run: pip install -r requirements.txt
-
-      - name: Run agent
-        env:
-          AGENT_NAME: PredatorTaskAgent
-        run: python agent.py
-
       - name: Register agent in Predator Hub (optional)
         continue-on-error: true
         env:
@@ -51,5 +43,20 @@ jobs:
           import json
           services=json.load(open("/tmp/hub-services.json"))["result"]["structuredContent"]["services"]
           routes=json.load(open("/tmp/hub-routes.json"))["result"]["structuredContent"]["routes"]
-          print(f"MCP catalog discovery: {len(services)} services/workers, {len(routes)} route definitions.")
+          print("MCP catalog discovery: %d services/workers, %d route definitions." % (len(services), len(routes)))
           PY
+
+      - name: Process one safe Hub task (optional)
+        continue-on-error: true
+        env:
+          INFRA_HUB_TOKEN: ${{ secrets.INFRA_HUB_TOKEN }}
+          INFRA_HUB_URL: https://x402-api-wigc.onrender.com
+        run: python hub_worker.py
+
+      - name: Install BasedAgents SDK
+        run: pip install -r requirements.txt
+
+      - name: Run agent
+        env:
+          AGENT_NAME: PredatorTaskAgent
+        run: python agent.py
