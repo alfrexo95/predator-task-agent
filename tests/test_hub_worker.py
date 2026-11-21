@@ -14,6 +14,7 @@ class FakeHubClient:
             "routes": [
                 {"path": "/health", "method": "GET", "auth": "public", "payment": "none", "deployment_status": "live"},
                 {"path": "/v1/scan", "method": "POST", "auth": "api-key", "payment": "x402", "deployment_status": "live"},
+                {"path": "/v1/scan/summary", "method": "GET", "auth": "api-key", "payment": "x402", "deployment_status": "live"},
             ],
         }
 
@@ -60,7 +61,7 @@ class HubWorkerTests(unittest.TestCase):
     def test_paid_or_authenticated_route_is_rejected_without_call(self):
         client = FakeHubClient()
         with patch("hub_worker.urlopen") as mocked:
-            result = execute_task({"capability": "route.health", "payload": {"service_id": "scan-malware-security", "path": "/v1/scan"}}, client)
+            result = execute_task({"capability": "route.health", "payload": {"service_id": "scan-malware-security", "path": "/v1/scan/summary"}}, client)
         self.assertFalse(result["ok"])
         self.assertEqual(result["reason"], "route_not_public_free_get")
         mocked.assert_not_called()
