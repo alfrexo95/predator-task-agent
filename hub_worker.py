@@ -8,7 +8,6 @@ from __future__ import annotations
 import json
 import os
 from urllib.error import HTTPError, URLError
-from urllib.parse import urljoin
 from urllib.request import Request, urlopen
 
 AGENT_ID = "predator-task-agent"
@@ -118,7 +117,9 @@ def execute_task(task: dict, client: HubClient) -> dict:
             req = Request(url, headers={"Accept": "application/json"}, method="GET")
             with urlopen(req, timeout=10) as response:
                 body = response.read(2048)
-                status = getattr(response, "status", response.getcode())
+                status = getattr(response, "status", None)
+                if status is None:
+                    status = response.getcode()
                 content_type = response.headers.get("Content-Type", "")
             json_type = None
             if "json" in content_type.lower() and body:
