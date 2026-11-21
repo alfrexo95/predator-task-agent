@@ -42,7 +42,7 @@ class HubWorkerTests(unittest.TestCase):
         result = execute_task({"capability": "hub.catalog.discover", "payload": {"service_id": "scan-malware-security"}}, client)
         self.assertTrue(result["ok"])
         self.assertEqual(result["service_id"], "scan-malware-security")
-        self.assertEqual(result["route_count"], 2)
+        self.assertEqual(result["route_count"], 3)
 
     def test_health_task_calls_only_catalogued_public_free_get_route(self):
         client = FakeHubClient()
