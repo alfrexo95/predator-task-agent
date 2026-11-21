@@ -52,7 +52,7 @@ class HubWorkerTests(unittest.TestCase):
             def read(self, n=-1): return b'{"status":"ok"}'
             def __enter__(self): return self
             def __exit__(self, *args): return False
-        with patch("hub_worker.urlopen", return_value=Response()) as mocked:
+        with patch("hub_worker.safe_urlopen", return_value=Response()) as mocked:
             result = execute_task({"capability": "route.health", "payload": {"service_id": "scan-malware-security", "path": "/health"}}, client)
         self.assertTrue(result["ok"])
         self.assertEqual(result["status_code"], 200)
@@ -60,7 +60,7 @@ class HubWorkerTests(unittest.TestCase):
 
     def test_paid_or_authenticated_route_is_rejected_without_call(self):
         client = FakeHubClient()
-        with patch("hub_worker.urlopen") as mocked:
+        with patch("hub_worker.safe_urlopen") as mocked:
             result = execute_task({"capability": "route.health", "payload": {"service_id": "scan-malware-security", "path": "/v1/scan/summary"}}, client)
         self.assertFalse(result["ok"])
         self.assertEqual(result["reason"], "route_not_public_free_get")
@@ -69,7 +69,7 @@ class HubWorkerTests(unittest.TestCase):
     def test_non_trusted_catalog_host_is_rejected_without_call(self):
         client = FakeHubClient()
         client.service_data["service"]["base_url"] = "https://evil.example"
-        with patch("hub_worker.urlopen") as mocked:
+        with patch("hub_worker.safe_urlopen") as mocked:
             result = execute_task({"capability": "route.health", "payload": {"service_id": "scan-malware-security", "path": "/health"}}, client)
         self.assertFalse(result["ok"])
         self.assertEqual(result["reason"], "service_host_not_allowed")
@@ -81,7 +81,7 @@ class HubWorkerTests(unittest.TestCase):
 
     def test_unknown_route_is_rejected_without_call(self):
         client = FakeHubClient()
-        with patch("hub_worker.urlopen") as mocked:
+        with patch("hub_worker.safe_urlopen") as mocked:
             result = execute_task({"capability": "route.health", "payload": {"service_id": "scan-malware-security", "path": "/internal"}}, client)
         self.assertFalse(result["ok"])
         self.assertEqual(result["reason"], "route_not_catalogued")
