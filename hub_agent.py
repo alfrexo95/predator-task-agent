@@ -25,4 +25,4 @@ def register_and_heartbeat(agent_id, platform, capabilities):
         return False
 
 if __name__ == "__main__":
-    register_and_heartbeat("predator-task-agent", "github-actions", ["reasoning", "code", "research"])
+    register_and_heartbeat("predator-task-agent", "github-actions", ["reasoning", "code", "research", "hub.catalog.discover", "route.health"])
