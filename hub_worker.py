@@ -9,6 +9,7 @@ import json
 import os
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
+from urllib.parse import urlparse
 
 AGENT_ID = "predator-task-agent"
 HUB_DEFAULT = "https://x402-api-wigc.onrender.com"
@@ -110,8 +111,10 @@ def execute_task(task: dict, client: HubClient) -> dict:
         ):
             return {"ok": False, "reason": "route_not_public_free_get"}
         base = str(service.get("base_url", "")).rstrip("/")
-        if not base.startswith("https://"):
-            return {"ok": False, "reason": "service_base_not_https"}
+        parsed = urlparse(base)
+        host = (parsed.hostname or "").lower()
+        if parsed.scheme != "https" or not (host.endswith(".onrender.com") or host.endswith(".workers.dev")):
+            return {"ok": False, "reason": "service_host_not_allowed"}
         url = base + path
         try:
             req = Request(url, headers={"Accept": "application/json"}, method="GET")
