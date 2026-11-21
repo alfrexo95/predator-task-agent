@@ -27,3 +27,11 @@ jobs:
         env:
           AGENT_NAME: PredatorTaskAgent
         run: python agent.py
+
+      - name: Register agent in Predator Hub (optional)
+        if: ${{ secrets.INFRA_HUB_TOKEN != '' }}
+        continue-on-error: true
+        env:
+          INFRA_HUB_TOKEN: ${{ secrets.INFRA_HUB_TOKEN }}
+          INFRA_HUB_URL: https://x402-api-wigc.onrender.com
+        run: python hub_agent.py
