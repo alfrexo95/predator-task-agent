@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch
 
-from hub_worker import execute_task, run_once
+from hub_worker import execute_task, run_once, _NoRedirect
 
 
 class FakeHubClient:
@@ -74,6 +74,10 @@ class HubWorkerTests(unittest.TestCase):
         self.assertFalse(result["ok"])
         self.assertEqual(result["reason"], "service_host_not_allowed")
         mocked.assert_not_called()
+
+    def test_redirect_handler_blocks_redirects(self):
+        handler = _NoRedirect()
+        self.assertIsNone(handler.redirect_request(None, None, 302, "Found", {}, "https://evil.example/"))
 
     def test_unknown_route_is_rejected_without_call(self):
         client = FakeHubClient()
