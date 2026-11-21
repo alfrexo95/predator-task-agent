@@ -34,3 +34,22 @@ jobs:
           INFRA_HUB_TOKEN: ${{ secrets.INFRA_HUB_TOKEN }}
           INFRA_HUB_URL: https://x402-api-wigc.onrender.com
         run: python hub_agent.py
+
+      - name: Discover Hub service and route catalog (optional)
+        continue-on-error: true
+        env:
+          INFRA_HUB_TOKEN: ${{ secrets.INFRA_HUB_TOKEN }}
+          INFRA_HUB_URL: https://x402-api-wigc.onrender.com
+        run: |
+          if [ -z "${INFRA_HUB_TOKEN:-}" ]; then echo "MCP catalog discovery skipped: token not configured"; exit 0; fi
+          set -euo pipefail
+          services_payload='{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"list_services","arguments":{}}}'
+          routes_payload='{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"list_routes","arguments":{}}}'
+          curl -fsS --max-time 20 -H "Authorization: Bearer $INFRA_HUB_TOKEN" -H "Content-Type: application/json" -d "$services_payload" "$INFRA_HUB_URL/mcp" -o /tmp/hub-services.json
+          curl -fsS --max-time 20 -H "Authorization: Bearer $INFRA_HUB_TOKEN" -H "Content-Type: application/json" -d "$routes_payload" "$INFRA_HUB_URL/mcp" -o /tmp/hub-routes.json
+          python3 - <<'PY'
+          import json
+          services=json.load(open("/tmp/hub-services.json"))["result"]["structuredContent"]["services"]
+          routes=json.load(open("/tmp/hub-routes.json"))["result"]["structuredContent"]["routes"]
+          print(f"MCP catalog discovery: {len(services)} services/workers, {len(routes)} route definitions.")
+          PY
