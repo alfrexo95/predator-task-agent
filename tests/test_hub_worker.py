@@ -65,6 +65,15 @@ class HubWorkerTests(unittest.TestCase):
         self.assertEqual(result["reason"], "route_not_public_free_get")
         mocked.assert_not_called()
 
+    def test_non_trusted_catalog_host_is_rejected_without_call(self):
+        client = FakeHubClient()
+        client.service_data["service"]["base_url"] = "https://evil.example"
+        with patch("hub_worker.urlopen") as mocked:
+            result = execute_task({"capability": "route.health", "payload": {"service_id": "scan-malware-security", "path": "/health"}}, client)
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["reason"], "service_host_not_allowed")
+        mocked.assert_not_called()
+
     def test_unknown_route_is_rejected_without_call(self):
         client = FakeHubClient()
         with patch("hub_worker.urlopen") as mocked:
