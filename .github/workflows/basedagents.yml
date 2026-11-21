@@ -29,7 +29,6 @@ jobs:
         run: python agent.py
 
       - name: Register agent in Predator Hub (optional)
-        if: ${{ secrets.INFRA_HUB_TOKEN != '' }}
         continue-on-error: true
         env:
           INFRA_HUB_TOKEN: ${{ secrets.INFRA_HUB_TOKEN }}
