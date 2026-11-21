@@ -8,10 +8,20 @@ from __future__ import annotations
 import json
 import os
 from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+from urllib.request import Request, urlopen, HTTPRedirectHandler, build_opener
 from urllib.parse import urlparse
 
 AGENT_ID = "predator-task-agent"
+
+
+class _NoRedirect(HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+def safe_urlopen(req, timeout=10):
+    """HTTP client that rejects redirects to avoid redirect-based SSRF."""
+    return build_opener(_NoRedirect()).open(req, timeout=timeout)
 HUB_DEFAULT = "https://x402-api-wigc.onrender.com"
 
 
@@ -118,7 +128,7 @@ def execute_task(task: dict, client: HubClient) -> dict:
         url = base + path
         try:
             req = Request(url, headers={"Accept": "application/json"}, method="GET")
-            with urlopen(req, timeout=10) as response:
+            with safe_urlopen(req, timeout=10) as response:
                 body = response.read(2048)
                 status = getattr(response, "status", None)
                 if status is None:
